@@ -4,6 +4,10 @@
 #include "pico/stdlib.h"
 #include "pico/bootrom.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include "vram.h"
+#include "cli.h"
 
 // Assuming a defined MAX_MEMORY_ADDRESS for safety
 #define MAX_MEMORY_ADDRESS 0x20040000 // Example value, adjust as needed
@@ -14,34 +18,60 @@ Command commands[] = {
     {"REBOOT", "Boots the device into programming mode"},
     {"POKE", "Writes a value to memory"},
     {"PEEK", "Reads a value from memory"},
-    {"HELP", "Prints this help message"}
+    {"HELP", "Prints this help message"},
+    {"WRITE_VRAM", "Writes a byte to the VRAM"},
+    {"READ_VRAM", "Reads a byte from the VRAM"}
     // Add more commands as needed
 };
 
+void cleanString(char *string)
+{
+    for (int i = 0; i < strlen(string); i++)
+    {
+        if (string[i] == '\n')
+        {
+            string[i] = '\0';
+            return;
+        }
+    }
+}
+
+void printAndRender(char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    char buffer[1024];
+    vsprintf(buffer, format, args);
+    cleanString(buffer);
+    add_line_to_history(buffer);
+}
+
 void printHelp()
 {
-    printf("\nAvailable commands:\n");
+    printAndRender("Available commands:\n");
     for (int i = 0; i < sizeof(commands) / sizeof(Command); i++)
     {
-        printf("%s: %s\n", commands[i].commandName, commands[i].helpString);
+        printAndRender("%s: %s\n", commands[i].commandName, commands[i].helpString);
     }
 }
 
 void ledOn()
 {
-    printf("\nTurning LED on\n");
+    printAndRender("Turning LED on\n");
     gpio_put(LED_PIN, 1);
 }
 
 void ledOff()
 {
-    printf("\nTurning LED off\n");
+    printAndRender("Turning LED off\n");
     gpio_put(LED_PIN, 0);
 }
 
 void reboot()
 {
-    printf("\nBooting device into programming mode\n");
+    printAndRender("Booting device into programming mode\n");
     reset_usb_boot(0, 0);
 }
 
@@ -140,11 +170,11 @@ void handleCommand(char *commandName, char *args[], int argCount)
             uint32_t address = strtoul(args[1], NULL, 0);
             uint32_t value = strtoul(args[2], NULL, 0);
             poke(address, value, size);
-            printf("\nWrote value %08X to address %08X\n", value, address);
+            printAndRender("Wrote value %08X to address %08X\n", value, address);
         }
         else
         {
-            printf("\nInsufficient arguments for POKE\n");
+            printAndRender("Insufficient arguments for POKE\n");
         }
     }
     else if (strcmp(commandName, "PEEK") == 0)
@@ -155,16 +185,43 @@ void handleCommand(char *commandName, char *args[], int argCount)
             Size size = parseSize(args[0]);
             uint32_t address = strtoul(args[1], NULL, 0);
             uint32_t value = peek(address, size);
-            printf("\nValue at address %08X: %08X\n", address, value);
+            printAndRender("Value at address %08X: %08X\n", address, value);
         }
         else
         {
-            printf("\nInsufficient arguments for PEEK\n");
+            printAndRender("Insufficient arguments for PEEK\n");
+        }
+    }
+    else if (strcmp(commandName, "WRITE_RAM") == 0)
+    {
+        if (argCount >= 2)
+        {
+            uint16_t address = strtoul(args[0], NULL, 0);
+            uint8_t value = strtoul(args[1], NULL, 0);
+            write_vram(address, value);
+            printAndRender("Wrote value %08X to address %08X\n", value, address);
+        }
+        else
+        {
+            printAndRender("Insufficient arguments for WRITE_VRAM\n");
+        }
+    }
+    else if (strcmp(commandName, "READ_RAM") == 0)
+    {
+        if (argCount >= 1)
+        {
+            uint16_t address = strtoul(args[0], NULL, 0);
+            uint8_t value = read_vram(address);
+            printAndRender("Value at address %08X: %08X\n", address, value);
+        }
+        else
+        {
+            printAndRender("Insufficient arguments for READ_VRAM\n");
         }
     }
     else
     {
-        printf("\nUnknown command\n");
+        printAndRender("Unknown command\n");
     }
     // Add more commands as needed
 }

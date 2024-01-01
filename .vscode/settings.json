@@ -3,8 +3,7 @@
   "cmake.statusbar.advanced": {
     "debug" : {
       "visibility": "hidden"
-              },
-    "launch" : {
+              },    "launch" : {
       "visibility": "hidden"
                },
     "build" : {
@@ -13,5 +12,10 @@
     "buildTarget" : {
       "visibility": "hidden"
                },
-     },
+    },
+    "files.associations": {
+      "string.h": "c",
+      "*.tcc": "c",
+      "interpretter.h": "c"
+    },
 }

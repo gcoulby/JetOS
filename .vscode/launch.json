@@ -11,18 +11,15 @@
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",
-      "gdbPath": "gdb-multiarch",
-      "serverArgs": [
-        
-      ],
+      "gdbPath": "arm-none-eabi-gdb",
       "device": "RP2040",
       "configFiles": [
-        "interface/raspberrypi-swd.cfg",
+        "interface/picoprobe.cfg",
         "target/rp2040.cfg"
         ],
       "svdFile": "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
-      "runToEntryPoint": "main",
-      // Give restart the same functionality as runToEntryPoint - main
+      "runToMain": true,
+      // Give restart the same functionality as runToMain
       "postRestartCommands": [
           "break main",
           "continue"

@@ -6,11 +6,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include "command.h"
+// #include "ram.h"
+#include "Interpretter.h"
 
-#define MAX_INPUT_LENGTH 1024
+// RAM ram;
 
 void parseAndExecuteCommand(char *input)
 {
+    // strip first 2 characters
+    input = input + 2;
+
     char *args[10]; // Adjust size as needed
     int argCount = 0;
 
@@ -102,79 +107,82 @@ void handle_escape()
     }
 }
 
-int main()
-{
-    stdio_init_all();
+// int main()
+// {
+//     stdio_init_all();
 
-    // move cursor to top left
-    printf("\033[0;0H");
-    // clear screen
-    printf("\033[2J");
+//     // create ram
+//     ram = create_ram(0xFFFF);
 
-    printf("|-------------------------------------|\n");
-    printf("| JetOS v0.1                          |\n");
-    printf("| (c) Graham Coulby 2023              |\n");
-    printf("|-------------------------------------|\n");
-    printf("> ");
+//     // move cursor to top left
+//     printf("\033[0;0H");
+//     // clear screen
+//     printf("\033[2J");
 
-    char buffer[MAX_INPUT_LENGTH];
+//     printf("|-------------------------------------|\n");
+//     printf("| JetOS v0.1                          |\n");
+//     printf("| (c) Graham Coulby 2023              |\n");
+//     printf("|-------------------------------------|\n");
+//     printf("> ");
 
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
-    int index = 0;
+//     char buffer[MAX_INPUT_LENGTH];
 
-    while (1)
-    {
-        // Read a character as an int to handle EOF
-        int ch = getchar();
+//     gpio_init(LED_PIN);
+//     gpio_set_dir(LED_PIN, GPIO_OUT);
+//     int index = 0;
 
-        // Handle different types of newline characters
-        if (ch == '\n' || ch == '\r')
-        {
-            // printf("\n");
-            if (index == 0 && ch == '\n')
-            {
-                // This handles the case where '\r' is followed by '\n'
-                continue;
-            }
+//     while (1)
+//     {
+//         // Read a character as an int to handle EOF
+//         int ch = getchar();
 
-            // Null-terminate the string
-            buffer[index] = '\0';
+//         // Handle different types of newline characters
+//         if (ch == '\n' || ch == '\r')
+//         {
+//             // printf("\n");
+//             if (index == 0 && ch == '\n')
+//             {
+//                 // This handles the case where '\r' is followed by '\n'
+//                 continue;
+//             }
 
-            // Parse the command
-            parseAndExecuteCommand(buffer);
+//             // Null-terminate the string
+//             buffer[index] = '\0';
 
-            // Reset for next command
-            index = 0;
-            reset_buffer(buffer);
-            printf("\n> ");
-        }
-        else if (ch == '\b' || ch == 127)
-        {
-            // Handle backspace
-            if (index > 0)
-            {
-                putchar('\b');
-                putchar(' ');
-                putchar('\b');
-                buffer[index--] = '\0';
-            }
-        }
-        else
-        {
-            if (ch == 27)
-            {
-                handle_escape();
-            }
-            // if valid character, add to buffer
-            else if (index < MAX_INPUT_LENGTH - 1 && ch >= 32 && ch <= 126)
-            {
-                // Echo the character
-                putchar(ch);
-                // Store the character
-                buffer[index++] = ch;
-            }
-        }
-    }
-    return 0;
-}
+//             // Parse the command
+//             parseAndExecuteCommand(buffer);
+
+//             // Reset for next command
+//             index = 0;
+//             reset_buffer(buffer);
+//             printf("\n> ");
+//         }
+//         else if (ch == '\b' || ch == 127)
+//         {
+//             // Handle backspace
+//             if (index > 0)
+//             {
+//                 putchar('\b');
+//                 putchar(' ');
+//                 putchar('\b');
+//                 buffer[index--] = '\0';
+//             }
+//         }
+//         else
+//         {
+//             if (ch == 27)
+//             {
+//                 handle_escape();
+//             }
+//             // if valid character, add to buffer
+//             else if (index < MAX_INPUT_LENGTH - 1 && ch >= 32 && ch <= 126)
+//             {
+//                 // Echo the character
+//                 putchar(ch);
+//                 // Store the character
+//                 buffer[index++] = ch;
+//             }
+//         }
+//     }
+//     return 0;
+// }

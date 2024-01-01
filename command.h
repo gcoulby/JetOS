@@ -21,6 +21,6 @@ uint32_t peek(uint32_t address, Size size);
 
 void handleCommand(char *commandName, char *args[], int argCount);
 
-extern Command commands[6];
+extern Command commands[8];
 
 #endif // COMMAND_H
