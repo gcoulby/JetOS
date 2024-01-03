@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include "vram.h"
 #include "cli.h"
+#include "programs/ramon/ramon.h"
 
 // Assuming a defined MAX_MEMORY_ADDRESS for safety
 #define MAX_MEMORY_ADDRESS 0x20040000 // Example value, adjust as needed
@@ -20,7 +21,10 @@ Command commands[] = {
     {"PEEK", "Reads a value from memory"},
     {"HELP", "Prints this help message"},
     {"WRITE_VRAM", "Writes a byte to the VRAM"},
-    {"READ_VRAM", "Reads a byte from the VRAM"}
+    {"READ_VRAM", "Reads a byte from the VRAM"},
+    {"RAMON", "Starts the memory monitor"},
+    {"CLEAR", "Clears the screen"},
+    {"EXIT", "Exits the current process"}
     // Add more commands as needed
 };
 
@@ -149,6 +153,10 @@ void handleCommand(char *commandName, char *args[], int argCount)
     {
         printHelp();
     }
+    else if (strcmp(commandName, "CLEAR") == 0)
+    {
+        clear_screen();
+    }
     else if (strcmp(commandName, "ON") == 0)
     {
         ledOn();
@@ -218,6 +226,18 @@ void handleCommand(char *commandName, char *args[], int argCount)
         {
             printAndRender("Insufficient arguments for READ_VRAM\n");
         }
+    }
+    else if (strcmp(commandName, "RAMON") == 0)
+    {
+        printAndRender("Starting memory monitor\n");
+        active_process = ramon_process;
+        ramon();
+    }
+    else if (strcmp(commandName, "EXIT") == 0)
+    {
+        printAndRender("Exiting process\n");
+        active_process = cli_process;
+        clear_screen();
     }
     else
     {

@@ -13,8 +13,8 @@
 
 void parseAndExecuteCommand(char *input)
 {
-    // strip first 2 characters
-    input = input + 2;
+    // strip the last character
+    input[strlen(input) - 1] = '\0';
 
     char *args[10]; // Adjust size as needed
     int argCount = 0;

@@ -16,6 +16,7 @@
     "files.associations": {
       "string.h": "c",
       "*.tcc": "c",
-      "interpretter.h": "c"
+      "interpretter.h": "c",
+      "ramon.h": "c"
     },
 }

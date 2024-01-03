@@ -7,12 +7,18 @@
 #include "cli.h"
 #include "gfx/vec2.h"
 #include "gfx/renderer.h"
+#include "Interpretter.h"
 
 #define BORDER_THICKNESS 40
 
+Process cli_process = {
+    .name = "idle",
+    .pid = 0x00,
+};
+
 char *history[HISTORY_LENGTH] = {0};
 char current_line[LINE_LENGTH];
-int current_row = 4;
+int current_row = 0;
 int current_col = 0;
 
 static void draw(void);
@@ -24,8 +30,11 @@ void cli_init(void)
 {
     // reset_game();
     renderer_init(draw);
-    add_char_to_buffer('>');
-    add_char_to_buffer(' ');
+
+    add_line_to_history("|------------------------------------------------------|");
+    add_line_to_history("| JetOS v0.1                                           |");
+    add_line_to_history("| Copyright (c) 2024 Graham Coulby                     |");
+    add_line_to_history("|------------------------------------------------------|");
 }
 
 void cli_update(void)
@@ -56,16 +65,7 @@ void write_lines(void)
     }
 }
 
-// void add_char_to_line(char ch)
-// {
-//     history[current_row][current_col] = ch;
-//     printf("Adding character %c to line\n", ch);
-//     printf("History: %s\n", history[current_row]);
-//     // current_line[current_col] = ch;
-//     current_col++;
-// }
-
-void add_char_to_buffer(char ch)
+void add_char_to_buffer(char ch, bool inc)
 {
     // Allocate or resize the current line if necessary
     if (history[current_row] == NULL)
@@ -89,7 +89,11 @@ void add_char_to_buffer(char ch)
     history[current_row][current_col] = ch;
     history[current_row][current_col + 1] = '\0';
 
-    current_col++;
+    if (inc)
+    {
+        current_col++;
+        add_char_to_buffer(0x80, false);
+    }
 }
 
 void remove_char_from_buffer(void)
@@ -101,15 +105,30 @@ void remove_char_from_buffer(void)
     }
     current_col--;
     history[current_row][current_col] = '\0';
+    add_char_to_buffer(0x80, false);
+}
+
+void shift_history_up(void)
+{
+    printf("Shifting buffer up\n");
+    for (int i = 0; i < HISTORY_LENGTH - 1; i++)
+    {
+        history[i] = history[i + 1];
+    }
+    history[HISTORY_LENGTH - 1] = '\0';
+    current_row--;
 }
 
 void add_buffer_to_history(void)
 {
     printf("Adding line to history\n");
     current_row++;
+    if (current_row >= HISTORY_LENGTH)
+    {
+        shift_history_up();
+    }
     current_col = 0;
-    add_char_to_buffer('>');
-    add_char_to_buffer(' ');
+    add_char_to_buffer(0x80, false);
 }
 
 void add_line_to_history(char *line)
@@ -117,9 +136,13 @@ void add_line_to_history(char *line)
     printf("Adding line to history\n");
     history[current_row] = strdup(line);
     current_row++;
+    if (current_row >= HISTORY_LENGTH)
+    {
+        shift_history_up();
+    }
+
     current_col = 0;
-    add_char_to_buffer('>');
-    add_char_to_buffer(' ');
+    add_char_to_buffer(0x80, false);
 }
 
 void remove_line_from_history(void)
@@ -141,13 +164,28 @@ void remove_line_from_history(void)
     }
 }
 
+void clear_screen(void)
+{
+    printf("Clearing history\n");
+    for (int i = 0; i < HISTORY_LENGTH; i++)
+    {
+        if (history[i] != NULL)
+        {
+            free(history[i]);
+            history[i] = NULL;
+        }
+    }
+    current_row = 0;
+    current_col = 0;
+    // init current_line
+    for (int i = 0; i < LINE_LENGTH; i++)
+    {
+        current_line[i] = '\0';
+    }
+}
+
 void draw(void)
 {
-    write_string_to_row("|------------------------------------------------------|", 0);
-    write_string_to_row("| JetOS v0.1                                           |", 1);
-    write_string_to_row("| Copyright (c) 2024 Graham Coulby                     |", 2);
-    write_string_to_row("|------------------------------------------------------|", 3);
-
     // Draw top border
     renderer_draw_rect(0, 0, renderer_screen_width, BORDER_THICKNESS);
     // Draw bottom border
@@ -162,4 +200,50 @@ void draw(void)
 
     // Draw current line
     write_string_to_row(current_line, current_row);
+}
+
+bool process_input()
+{
+    char ch = (char)getchar();
+    printf("%c", ch);
+
+    if (ch == '\n' || ch == '\r' || ch == '\0')
+    {
+        if (current_col == 0)
+        {
+            // This handles the case where '\r' is followed by '\n'
+            return false;
+        }
+        printf("\nReturn\n");
+        add_buffer_to_history();
+        if (current_row > 0)
+        {
+            return true;
+        }
+    }
+    else if (current_col > LINE_LENGTH - 3)
+    {
+        printf("\nAuto moving to new line\n");
+        add_buffer_to_history();
+        add_char_to_buffer(ch, true);
+    }
+    // if backspace, remove last character from line
+    else if (ch == '\b' || ch == 127)
+    {
+        printf("\b");
+        remove_char_from_buffer();
+    }
+    else
+    {
+        if (ch == 27)
+        {
+            handle_escape();
+        }
+        // if valid character, add to buffer
+        else if (current_col < LINE_LENGTH - 1 && ch >= 32 && ch <= 126)
+        {
+            add_char_to_buffer(ch, true);
+        }
+    }
+    return false;
 }
