@@ -11,101 +11,101 @@
 
 // RAM ram;
 
-void parseAndExecuteCommand(char *input)
-{
-    // strip the last character
-    input[strlen(input) - 1] = '\0';
+// void parseAndExecuteCommand(char *input)
+// {
+//     // strip the last character
+//     input[strlen(input) - 1] = '\0';
 
-    char *args[10]; // Adjust size as needed
-    int argCount = 0;
+//     char *args[10]; // Adjust size as needed
+//     int argCount = 0;
 
-    // Tokenize the input string
-    char *token = strtok(input, " ");
-    char *commandName = token; // First token is the command name
-    token = strtok(NULL, " ");
+//     // Tokenize the input string
+//     char *token = strtok(input, " ");
+//     char *commandName = token; // First token is the command name
+//     token = strtok(NULL, " ");
 
-    while (token != NULL && argCount < 10)
-    {
-        args[argCount++] = token;
-        token = strtok(NULL, " ");
-    }
+//     while (token != NULL && argCount < 10)
+//     {
+//         args[argCount++] = token;
+//         token = strtok(NULL, " ");
+//     }
 
-    // Execute the matching command
-    for (int i = 0; i < sizeof(commands) / sizeof(Command); i++)
-    {
-        if (strcmp(commands[i].commandName, commandName) == 0)
-        {
-            handleCommand(commandName, args, argCount);
-            return;
-        }
-    }
+//     // Execute the matching command
+//     for (int i = 0; i < sizeof(commands) / sizeof(Command); i++)
+//     {
+//         if (strcmp(commands[i].commandName, commandName) == 0)
+//         {
+//             handleCommand(commandName, args, argCount);
+//             return;
+//         }
+//     }
 
-    if (strcmp(commandName, "") == 0)
-    {
-        return;
-    }
+//     if (strcmp(commandName, "") == 0)
+//     {
+//         return;
+//     }
 
-    printf("\nUnknown command: %s\n", commandName);
-}
+//     printf("\nUnknown command: %s\n", commandName);
+// }
 
-char *reset_buffer(char buffer[])
-{
-    for (int i = 0; i < MAX_INPUT_LENGTH; i++)
-    {
-        buffer[i] = '\0';
-    }
-    return buffer;
-}
+// char *reset_buffer(char buffer[])
+// {
+//     for (int i = 0; i < MAX_INPUT_LENGTH; i++)
+//     {
+//         buffer[i] = '\0';
+//     }
+//     return buffer;
+// }
 
-void handle_escape()
-{
-    char ch = getchar();
-    if (ch == '[')
-    {
-        ch = getchar();
-        if (ch == 'A')
-        {
-            printf("UP\n");
-        }
-        else if (ch == 'B')
-        {
-            printf("DOWN\n");
-        }
-        else if (ch == 'C')
-        {
-            printf("RIGHT\n");
-        }
-        else if (ch == 'D')
-        {
-            printf("LEFT\n");
-        }
-        else if (ch == '2')
-        {
-            ch = getchar();
+// void handle_escape()
+// {
+//     char ch = getchar();
+//     if (ch == '[')
+//     {
+//         ch = getchar();
+//         if (ch == 'A')
+//         {
+//             printf("UP\n");
+//         }
+//         else if (ch == 'B')
+//         {
+//             printf("DOWN\n");
+//         }
+//         else if (ch == 'C')
+//         {
+//             printf("RIGHT\n");
+//         }
+//         else if (ch == 'D')
+//         {
+//             printf("LEFT\n");
+//         }
+//         else if (ch == '2')
+//         {
+//             ch = getchar();
 
-            if (ch == '~')
-            {
-                printf("INSERT\n");
-            }
-            else if (ch == '5')
-            {
-                ch = getchar();
-                if (ch == '~')
-                {
-                    // Put this here because my push-to-talk key is F13 and it sends ESC [25~
-                }
-            }
-        }
-        else
-        {
-            for (int i = 0; i <= 4; i++)
-            {
-                getchar();
-            }
-            sleep_ms(10);
-        }
-    }
-}
+//             if (ch == '~')
+//             {
+//                 printf("INSERT\n");
+//             }
+//             else if (ch == '5')
+//             {
+//                 ch = getchar();
+//                 if (ch == '~')
+//                 {
+//                     // Put this here because my push-to-talk key is F13 and it sends ESC [25~
+//                 }
+//             }
+//         }
+//         else
+//         {
+//             for (int i = 0; i <= 4; i++)
+//             {
+//                 getchar();
+//             }
+//             sleep_ms(10);
+//         }
+//     }
+// }
 
 // int main()
 // {

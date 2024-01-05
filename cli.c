@@ -3,11 +3,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "pico/stdlib.h"
 #include <math.h>
 #include "cli.h"
 #include "gfx/vec2.h"
 #include "gfx/renderer.h"
-#include "Interpretter.h"
+// #include "Interpretter.h"
 
 #define BORDER_THICKNESS 40
 
@@ -182,6 +183,7 @@ void clear_screen(void)
     {
         current_line[i] = '\0';
     }
+    add_char_to_buffer(0x80, false);
 }
 
 void draw(void)
@@ -246,4 +248,63 @@ bool process_input()
         }
     }
     return false;
+}
+
+char *reset_buffer(char buffer[])
+{
+    for (int i = 0; i < MAX_INPUT_LENGTH; i++)
+    {
+        buffer[i] = '\0';
+    }
+    return buffer;
+}
+
+void handle_escape()
+{
+    char ch = getchar();
+    if (ch == '[')
+    {
+        ch = getchar();
+        if (ch == 'A')
+        {
+            printf("UP\n");
+        }
+        else if (ch == 'B')
+        {
+            printf("DOWN\n");
+        }
+        else if (ch == 'C')
+        {
+            printf("RIGHT\n");
+        }
+        else if (ch == 'D')
+        {
+            printf("LEFT\n");
+        }
+        else if (ch == '2')
+        {
+            ch = getchar();
+
+            if (ch == '~')
+            {
+                printf("INSERT\n");
+            }
+            else if (ch == '5')
+            {
+                ch = getchar();
+                if (ch == '~')
+                {
+                    // Put this here because my push-to-talk key is F13 and it sends ESC [25~
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i <= 4; i++)
+            {
+                getchar();
+            }
+            sleep_ms(10);
+        }
+    }
 }

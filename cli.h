@@ -26,5 +26,8 @@ void add_buffer_to_history(void);
 void add_line_to_history(char *line);
 void clear_screen(void);
 bool process_input();
+void handle_escape();
+
+char *reset_buffer(char buffer[]);
 
 #endif // CLI_H

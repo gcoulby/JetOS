@@ -1,13 +1,16 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 #include "pico/multicore.h"
 #include "hardware/timer.h"
 #include "hardware/gpio.h"
 #include "gfx/connections.h"
 #include "cli.h"
-#include "Interpretter.h"
+// #include "Interpretter.h"
 #include "programs/ramon/ramon.h"
+#include "command.h"
 
 // const char *history[64];
 // int current_row = 4;
@@ -20,6 +23,14 @@ void core1_main()
   {
     cli_update();
   }
+}
+
+bool check_exit()
+{
+  char *input = history[current_row - 1];
+  input[strlen(input) - 1] = '\0';
+
+  return strcmp(input, "EXIT") == 0;
 }
 
 int main()
@@ -38,13 +49,28 @@ int main()
     case 0x00:
       if (process_input())
       {
-        parseAndExecuteCommand(history[current_row - 1]);
+        // parseAndExecuteCommand(history[current_row - 1]);
+        CommandWithArgs com = parseCommand(history[current_row - 1]);
+        if (com.registered == false)
+        {
+          printf("\nUnknown command: %s\n", com.commandName);
+          add_line_to_history("Unknown command - type HELP for a list of commands");
+          break;
+        }
+        if (com.commandName != NULL)
+        {
+          handleCommand(com.commandName, com.args, com.argCount);
+        }
       }
       break;
     case 0x01:
       if (process_input())
       {
-        ramon();
+        CommandWithArgs com = parseCommand(history[current_row - 1]);
+        if (com.commandName != NULL)
+        {
+          handleRamonCommand(com.commandName, com.args, com.argCount);
+        }
       }
       break;
     default:

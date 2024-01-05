@@ -17,7 +17,7 @@ project(jet-os C CXX ASM)
 pico_sdk_init()
 
 # Add the main executable
-add_executable(jet-os main.c globals.c cli.c Interpretter.c command.c vram.c)
+add_executable(jet-os main.c globals.c cli.c command.c vram.c)
 
 # Additional configuration for main executable
 pico_set_program_name(jet-os "jet-os")

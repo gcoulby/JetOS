@@ -18,9 +18,9 @@
 
 #define VRAM_START 0x0
 
-void parseAndExecuteCommand(char *input);
-void handle_escape();
+// void parseAndExecuteCommand(char *input);
+// void handle_escape();
 
-char *reset_buffer(char buffer[]);
+// char *reset_buffer(char buffer[]);
 
 #endif // INTERPRETTER_H
