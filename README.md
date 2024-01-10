@@ -3,6 +3,12 @@
 
 🚧Work in Progress🚧
 
+
+> ⚠️ NOTE: This code is not, and will not be, supported. This is purely for my own morbid curiosity. 
+>
+>Thus, PRs, Issues etc will not be actioned. 
+
+
 ## Introduction
 
 JetOS is a lightweight, bare metal operating system designed specifically for the Raspberry Pi Pico RP2040. It is built to provide a minimalistic environment for low-level hardware interaction and high-performance applications.
