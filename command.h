@@ -30,6 +30,7 @@ void ledOff();
 void reboot();
 void poke(uint32_t address, uint32_t value, Size size);
 
+void printAndRenderLine(char *format, ...);
 void printAndRender(char *format, ...);
 
 CommandWithArgs parseCommand(char *input);

@@ -66,7 +66,7 @@ void write_lines(void)
     }
 }
 
-void add_char_to_buffer(char ch, bool inc)
+void add_char_to_buffer(char ch, bool inc, bool includeCaret)
 {
     // Allocate or resize the current line if necessary
     if (history[current_row] == NULL)
@@ -93,7 +93,10 @@ void add_char_to_buffer(char ch, bool inc)
     if (inc)
     {
         current_col++;
-        add_char_to_buffer(0x80, false);
+        if (includeCaret)
+        {
+            add_char_to_buffer(0x80, false, false);
+        }
     }
 }
 
@@ -106,7 +109,7 @@ void remove_char_from_buffer(void)
     }
     current_col--;
     history[current_row][current_col] = '\0';
-    add_char_to_buffer(0x80, false);
+    add_char_to_buffer(0x80, false, true);
 }
 
 void shift_history_up(void)
@@ -120,7 +123,7 @@ void shift_history_up(void)
     current_row--;
 }
 
-void add_buffer_to_history(void)
+void add_buffer_to_history(bool includeCaret)
 {
     printf("Adding line to history\n");
     current_row++;
@@ -129,7 +132,10 @@ void add_buffer_to_history(void)
         shift_history_up();
     }
     current_col = 0;
-    add_char_to_buffer(0x80, false);
+    if (includeCaret)
+    {
+        add_char_to_buffer(0x80, false, true);
+    }
 }
 
 void add_line_to_history(char *line)
@@ -143,7 +149,16 @@ void add_line_to_history(char *line)
     }
 
     current_col = 0;
-    add_char_to_buffer(0x80, false);
+    add_char_to_buffer(0x80, false, true);
+}
+
+void add_to_history(char *text)
+{
+    printf("Adding each char to history\n");
+    for (int i = 0; i < strlen(text); i++)
+    {
+        add_char_to_buffer(text[i], true, false);
+    }
 }
 
 void remove_line_from_history(void)
@@ -183,7 +198,7 @@ void clear_screen(void)
     {
         current_line[i] = '\0';
     }
-    add_char_to_buffer(0x80, false);
+    add_char_to_buffer(0x80, false, true);
 }
 
 void draw(void)
@@ -217,7 +232,7 @@ bool process_input()
             return false;
         }
         printf("\nReturn\n");
-        add_buffer_to_history();
+        add_buffer_to_history(true);
         if (current_row > 0)
         {
             return true;
@@ -226,8 +241,8 @@ bool process_input()
     else if (current_col > LINE_LENGTH - 3)
     {
         printf("\nAuto moving to new line\n");
-        add_buffer_to_history();
-        add_char_to_buffer(ch, true);
+        add_buffer_to_history(true);
+        add_char_to_buffer(ch, true, true);
     }
     // if backspace, remove last character from line
     else if (ch == '\b' || ch == 127)
@@ -244,7 +259,7 @@ bool process_input()
         // if valid character, add to buffer
         else if (current_col < LINE_LENGTH - 1 && ch >= 32 && ch <= 126)
         {
-            add_char_to_buffer(ch, true);
+            add_char_to_buffer(ch, true, true);
         }
     }
     return false;

@@ -58,6 +58,26 @@ uint8_t peek(uint32_t address)
 //     }
 // }
 
+uint32_t getAddress(char *commandName)
+{
+    char addressString[10] = {'0', 'x', '2', '0', '0', '0', '0', '0', '0', '0'};
+    for (int i = 0; i < strlen(commandName); i++)
+    {
+        addressString[i + 2 + (8 - strlen(commandName))] = commandName[i];
+    }
+
+    return strtoul(addressString, NULL, 0);
+}
+
+void checkAddress(uint32_t address)
+{
+    if (address < MIN_MEMORY_ADDRESS || address > MAX_MEMORY_ADDRESS)
+    {
+        // Handle error: Address out of range
+        return;
+    }
+}
+
 void handleRamonCommand(char *commandName, char *args[], int argCount)
 {
     printf("Handling command: %s\n", commandName);
@@ -71,35 +91,73 @@ void handleRamonCommand(char *commandName, char *args[], int argCount)
 
     if (argCount == 0)
     {
-        printAndRender("");
-        uint32_t address = MIN_MEMORY_ADDRESS;
-        char addressString[10] = {'0', 'x', '2', '0', '0', '0', '0', '0', '0', '0'};
+        printAndRenderLine("");
 
-        if (strlen(commandName) > 6)
+        // if length of commandName is greater than 6 and does not contain '..' then return
+        if (strlen(commandName) > 8 && strstr(commandName, "..") == NULL)
         {
-            printAndRender("Address out of range\n");
+            printAndRenderLine("Invalid input\n");
             return;
         }
 
-        for (int i = 0; i < strlen(commandName); i++)
+        if (strstr(commandName, "..") != NULL)
         {
-            addressString[i + 2 + (8 - strlen(commandName))] = commandName[i];
-        }
+            // split string by '..'
+            char *startAddressString = strtok(commandName, "..");
+            char *endAddressString = strtok(NULL, "..");
 
-        address = strtoul(addressString, NULL, 0);
+            uint32_t startAddress = getAddress(startAddressString);
+            uint32_t endAddress = getAddress(endAddressString);
 
-        printf("Address: %08X\n", address);
+            if (startAddress > endAddress)
+            {
+                printAndRenderLine("Start address must be less than end address\n");
+                return;
+            }
+            else if (startAddress < MIN_MEMORY_ADDRESS)
+            {
+                printAndRenderLine("Start address out of range\n");
+                return;
+            }
+            else if (endAddress > MAX_MEMORY_ADDRESS)
+            {
+                printAndRenderLine("End address out of range\n");
+                return;
+            }
 
-        if (address < MIN_MEMORY_ADDRESS || address > MAX_MEMORY_ADDRESS)
-        {
-            printAndRender("Address out of range\n");
+            printAndRender("%08X:", startAddress);
+            // Calculate the number of bytes to skip at the beginning
+            uint32_t skipCount = startAddress % 0x10;
+
+            // Print -- for each skipped byte
+            for (uint32_t i = 0; i < skipCount; i++)
+            {
+                printAndRender(" --");
+            }
+
+            for (uint32_t address = startAddress; address <= endAddress; address++)
+            {
+                uint8_t value = *(uint8_t *)address;
+                printAndRender(" %02X", value);
+
+                if (address % 0x10 == 0x0F)
+                {
+                    add_buffer_to_history(false);
+                    if (address != endAddress)
+                    {
+                        printAndRender("%08X:", address + 1);
+                    }
+                }
+            }
             return;
         }
-        // uint8_t value = (uint8_t)peek(address);
-        uint8_t value = *(uint8_t *)address;
-
-        printAndRender("%08X: %02X\n", address, value);
-
-        printf("No arguments provided - initiating peek at the address specified in the last command\n");
+        else
+        {
+            uint32_t address = getAddress(commandName);
+            checkAddress(address);
+            uint8_t value = *(uint8_t *)address;
+            printAndRenderLine("%08X: %02X\n", address, value);
+            return;
+        }
     }
 }

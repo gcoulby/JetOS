@@ -35,7 +35,7 @@ void cleanString(char *string)
     }
 }
 
-void printAndRender(char *format, ...)
+void printAndRenderLine(char *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -47,30 +47,42 @@ void printAndRender(char *format, ...)
     add_line_to_history(buffer);
 }
 
+void printAndRender(char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    char buffer[1024];
+    vsprintf(buffer, format, args);
+    cleanString(buffer);
+    add_to_history(buffer);
+}
+
 void printHelp()
 {
-    printAndRender("Available commands:\n");
+    printAndRenderLine("Available commands:\n");
     for (int i = 0; i < sizeof(commands) / sizeof(Command); i++)
     {
-        printAndRender("%s: %s\n", commands[i].commandName, commands[i].helpString);
+        printAndRenderLine("%s: %s\n", commands[i].commandName, commands[i].helpString);
     }
 }
 
 void ledOn()
 {
-    printAndRender("Turning LED on\n");
+    printAndRenderLine("Turning LED on\n");
     gpio_put(LED_PIN, 1);
 }
 
 void ledOff()
 {
-    printAndRender("Turning LED off\n");
+    printAndRenderLine("Turning LED off\n");
     gpio_put(LED_PIN, 0);
 }
 
 void reboot()
 {
-    printAndRender("Booting device into programming mode\n");
+    printAndRenderLine("Booting device into programming mode\n");
     reset_usb_boot(0, 0);
 }
 
@@ -180,11 +192,11 @@ void handleCommand(char *commandName, char *args[], int argCount)
             uint16_t address = strtoul(args[0], NULL, 0);
             uint8_t value = strtoul(args[1], NULL, 0);
             write_vram(address, value);
-            printAndRender("Wrote value %08X to address %08X\n", value, address);
+            printAndRenderLine("Wrote value %08X to address %08X\n", value, address);
         }
         else
         {
-            printAndRender("Insufficient arguments for WRITE_VRAM\n");
+            printAndRenderLine("Insufficient arguments for WRITE_VRAM\n");
         }
     }
     else if (strcmp(commandName, "READ_RAM") == 0)
@@ -193,29 +205,29 @@ void handleCommand(char *commandName, char *args[], int argCount)
         {
             uint16_t address = strtoul(args[0], NULL, 0);
             uint8_t value = read_vram(address);
-            printAndRender("Value at address %08X: %08X\n", address, value);
+            printAndRenderLine("Value at address %08X: %08X\n", address, value);
         }
         else
         {
-            printAndRender("Insufficient arguments for READ_VRAM\n");
+            printAndRenderLine("Insufficient arguments for READ_VRAM\n");
         }
     }
     else if (strcmp(commandName, "RAMON") == 0)
     {
-        printAndRender("Starting memory monitor\n");
+        printAndRenderLine("Starting memory monitor\n");
         // active_process = ramon_process;
         // ramon();
         ramon_init();
     }
     else if (strcmp(commandName, "EXIT") == 0)
     {
-        printAndRender("Exiting process\n");
+        printAndRenderLine("Exiting process\n");
         active_process = cli_process;
         clear_screen();
     }
     else
     {
-        printAndRender("Unknown command\n");
+        printAndRenderLine("Unknown command\n");
     }
     // Add more commands as needed
 }
